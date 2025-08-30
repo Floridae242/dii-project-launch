@@ -74,29 +74,35 @@ $("#declareLaunchBtn").addEventListener('click', () => {
 socket.on('room:joined', ({ roomId }) => {
   YOU.room = roomId;
   YOU.id = socket.id;
-  YOU.isHost = true; // only for creator; joiner updates later
+  // ❌ อย่าบังคับให้ตนเองเป็น host ที่นี่
+  // YOU.isHost = true;
+
   $("#lobby").classList.remove('hidden');
   $("#roleArea").classList.remove('hidden');
   renderRoles();
-  requestQR();
+  requestQR(); // โอเคแม้จะไม่ใช่ host (server จะตอบ URL เดียวกัน)
 });
 
 socket.on('room:update', (data) => {
-  // Determine host
-  YOU.isHost = !!(data.id && socket.id && data.players && data.players.length && data.players[0].id === data.players[0].id);
-  // Show role area
+  // ✅ รู้ว่าใครเป็น host ที่แท้จริงจาก server
+  YOU.isHost = (socket.id === data.hostId);
+
   $("#roleArea").classList.remove('hidden');
-  // If joined (not creator), we still need to mark room id
+
   if (!YOU.room && data.id) YOU.room = data.id;
+
   renderPlayersLobby(data.players);
   renderInGame(data);
   renderLog(data.logs);
-  // launch window UI
+
   if (data.launchPending) {
     $("#launchInfo").classList.remove('hidden');
   } else {
     $("#launchInfo").classList.add('hidden');
   }
+
+  // ปุ่มเริ่มเกมให้กดได้เฉพาะ host
+  $("#startBtn").disabled = !YOU.isHost;
 });
 
 socket.on('you:update', ({ hand, traps, role }) => {
@@ -137,11 +143,12 @@ function renderRoles() {
 }
 
 function renderPlayersLobby(players=[]) {
+  const label = id => (ROLES.find(r=>r.id===id)?.name || id || '');
   const ul = $("#players");
   ul.innerHTML = '';
   players.forEach(p => {
     const li = document.createElement('li');
-    li.textContent = `${p.name} ${p.role? '— ' + p.role : ''} ${p.ready? '✅' : ''}`;
+    li.textContent = `${p.name} ${p.role? '— ' + label(p.role) : ''} ${p.ready? '✅' : ''}`;
     ul.appendChild(li);
   });
 }
@@ -152,7 +159,7 @@ function renderInGame(data) {
     return;
   }
   $("#game").classList.remove('hidden');
-  // Sidebar players
+
   const ul = $("#playersInGame");
   ul.innerHTML = '';
   data.players.forEach(p => {
@@ -164,7 +171,6 @@ function renderInGame(data) {
   });
   $("#turnInfo").textContent = `ถึงตา: ${ (data.players.find(p=>p.id===data.turnPlayerId)?.name)||'-' }`;
 
-  // Targets
   const sel = $("#targetSelect");
   sel.innerHTML = `<option value="">เลือกผู้เล่นเป้าหมาย</option>`;
   data.players.filter(p => p.id !== socket.id).forEach(p => {
@@ -173,6 +179,7 @@ function renderInGame(data) {
     o.textContent = p.name;
     sel.appendChild(o);
   });
+
   renderHand();
   renderTraps();
 }
@@ -220,7 +227,6 @@ function renderHand() {
     div.appendChild(el);
   });
 
-  // Update Launch button availability
   const progress = YOU.hand.filter(x=>x.type==='PROGRESS').length;
   $("#declareLaunchBtn").disabled = (progress !== 10);
 }
@@ -248,7 +254,6 @@ function renderLog(lines=[]) {
 
 // QA challenge on others' turns
 document.addEventListener('keydown', (e) => {
-  // Press Q to open prompt and challenge
   if (e.key.toLowerCase() === 'q') {
     const t = $("#targetSelect").value;
     if (!t) return;
