@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DII: Project Launch!</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <header class="header">
+    <h1>🚀 DII: Project Launch!</h1>
+    <p>ปั้นโปรเจกต์ให้ปัง ก่อนตลาดจะพัง!</p>
+  </header>
+
+  <main class="container">
+    <section id="lobby" class="card">
+      <div class="row">
+        <input id="playerName" placeholder="ชื่อของคุณ" />
+        <input id="roomCode" placeholder="Room Code (ถ้ามี)" />
+      </div>
+      <div class="row">
+        <button id="createRoomBtn">สร้างห้อง</button>
+        <button id="joinRoomBtn">เข้าร่วม</button>
+      </div>
+      <div id="share" class="share hidden">
+        <p>แชร์ให้เพื่อนสแกนเข้าห้องได้เลย</p>
+        <img id="qr" alt="QR" />
+        <p class="muted">หรือส่งลิงก์นี้: <span id="roomLink"></span></p>
+      </div>
+
+      <div id="roleArea" class="hidden">
+        <h3>เลือกบทบาท</h3>
+        <div class="roles" id="roles"></div>
+        <div class="row">
+          <label><input type="checkbox" id="readyToggle" /> พร้อมแล้ว</label>
+          <button id="startBtn" class="ghost">เริ่มเกม (เฉพาะ Host)</button>
+        </div>
+        <div>
+          <h3>ผู้เล่นในห้อง</h3>
+          <ul id="players"></ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="game" class="card hidden">
+      <div class="columns">
+        <aside class="side">
+          <h3>ผู้เล่น</h3>
+          <ul id="playersInGame"></ul>
+          <div id="turnInfo" class="chip"></div>
+          <div id="launchInfo" class="warning hidden">กำลังอยู่ในช่วง LAUNCH ใครอยากขัดขวาง ให้เล่น Reaction!</div>
+          <hr />
+          <button id="actionDevelop">Develop (จั่ว 1 ใบ)</button>
+          <button id="actionPOTarget" class="ghost">PO: Swap เริ่มเทิร์น</button>
+          <hr />
+          <h3>Traps ของคุณ</h3>
+          <ul id="myTraps"></ul>
+        </aside>
+        <section class="center">
+          <h3>ไพ่ในมือของคุณ</h3>
+          <div id="hand" class="hand"></div>
+          <div class="row">
+            <select id="targetSelect"></select>
+            <button id="declareLaunchBtn" class="danger">ประกาศ LAUNCH!</button>
+          </div>
+        </section>
+        <aside class="side">
+          <h3>Log</h3>
+          <div id="log" class="log"></div>
+          <details class="info">
+            <summary>เกี่ยวกับหลักสูตร DII</summary>
+            <p>สาขาบูรณาการอุตสาหกรรมดิจิทัล (DII) เน้น <strong>Smart Agri-Food & Supply Chain</strong>, <strong>Smart Manufacturing & Health Products</strong>, <strong>Smart Living</strong>, และ <strong>Smart Finance</strong>. เรียนแบบ WIL มีฝึกงานได้เงิน!</p>
+          </details>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/client.js"></script>
+</body>
+</html>
