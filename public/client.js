@@ -70,40 +70,46 @@ $("#declareLaunchBtn").addEventListener('click', () => {
   socket.emit('declare:launch');
 });
 
-// Socket events
+// เมื่อ join สำเร็จ (ทั้งคนสร้างห้องและคนที่เข้ามาทีหลังจะได้ event นี้)
 socket.on('room:joined', ({ roomId }) => {
   YOU.room = roomId;
   YOU.id = socket.id;
-  // ❌ อย่าบังคับให้ตนเองเป็น host ที่นี่
+  // ❌ อย่าบังคับ host
   // YOU.isHost = true;
 
   $("#lobby").classList.remove('hidden');
   $("#roleArea").classList.remove('hidden');
+
+  // ✅ สร้างรายการบทบาททันที
   renderRoles();
-  requestQR(); // โอเคแม้จะไม่ใช่ host (server จะตอบ URL เดียวกัน)
+
+  // ขอ QR (ไม่ใช่ host ก็ได้ลิงก์เดียวกัน)
+  requestQR();
 });
 
 socket.on('room:update', (data) => {
-  // ✅ รู้ว่าใครเป็น host ที่แท้จริงจาก server
+  // ✅ รู้ host ที่แท้จริงจาก server
   YOU.isHost = (socket.id === data.hostId);
 
   $("#roleArea").classList.remove('hidden');
 
   if (!YOU.room && data.id) YOU.room = data.id;
 
+  // ✅ เผื่อกรณี client โหลดหน้านี้โดยตรงแล้วไม่ได้ผ่าน room:joined
+  if (!$("#roles").children.length) {
+    renderRoles();
+  }
+
   renderPlayersLobby(data.players);
   renderInGame(data);
   renderLog(data.logs);
 
-  if (data.launchPending) {
-    $("#launchInfo").classList.remove('hidden');
-  } else {
-    $("#launchInfo").classList.add('hidden');
-  }
-
-  // ปุ่มเริ่มเกมให้กดได้เฉพาะ host
   $("#startBtn").disabled = !YOU.isHost;
+
+  if (data.launchPending) $("#launchInfo").classList.remove('hidden');
+  else $("#launchInfo").classList.add('hidden');
 });
+
 
 socket.on('you:update', ({ hand, traps, role }) => {
   if (hand) YOU.hand = hand;
