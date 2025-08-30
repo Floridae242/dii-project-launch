@@ -218,7 +218,7 @@ function broadcastRoom(room) {
   io.to(room.id).emit('room:update', {
     id: room.id,
     players: allPlayers(room),
-    youAre: null, // client will set local
+    hostId: room.host,
     started: room.started,
     turnPlayerId: currentPlayer(room)?.id || null,
     logs: room.logs.slice(-200),
