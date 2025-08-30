@@ -357,14 +357,20 @@ io.on('connection', (socket) => {
     broadcastRoom(room);
   });
 
-  socket.on('room:join', ({ roomId, name }) => {
-    const room = rooms.get((roomId||'').toUpperCase());
-    if (!room) return socket.emit('errorMsg', 'Room not found.');
-    socket.join(room.id);
-    socket.data.roomId = room.id;
-    addPlayer(room, socket.id, name);
-    broadcastRoom(room);
-  });
+ socket.on('room:join', ({ roomId, name }) => {
+  const room = rooms.get((roomId||'').toUpperCase());
+  if (!room) return socket.emit('errorMsg', 'Room not found.');
+  socket.join(room.id);
+  socket.data.roomId = room.id;
+  addPlayer(room, socket.id, name);
+
+  // ✅ แจ้งผู้เล่นคนที่เพิ่งเข้าให้รู้ว่าตัวเอง join สำเร็จ
+  socket.emit('room:joined', { roomId: room.id });
+
+  // ✅ broadcast ให้ทุกคนอัปเดตสถานะห้อง + ส่ง hostId เสมอ
+  broadcastRoom(room);
+});
+
 
   socket.on('room:leave', () => {
     const room = getRoomBySocket(socket);
